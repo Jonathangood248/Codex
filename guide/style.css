@@ -1,0 +1,350 @@
+/* ════════════════════════════════════════════════════════════
+   ── Task Guide Styles ──────────────────────────────────────
+   This stylesheet controls the look of the Task Guide app
+   at /guide. It uses a clean, developer-tool aesthetic.
+   ════════════════════════════════════════════════════════════ */
+
+:root {
+  --guide-sidebar: #f0f4f8;
+  --guide-bg: #ffffff;
+  --guide-font: 'Poppins', sans-serif;
+  --guide-accent: #4a6cf7;
+  --guide-success: #4ecb71;
+  --guide-error: #f05656;
+  --guide-text: #2d3436;
+  --guide-text-light: #636e72;
+  --guide-border: #e2e8f0;
+  --guide-radius: 12px;
+  --guide-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Reset ──────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--guide-font);
+  color: var(--guide-text);
+  background: var(--guide-bg);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Two-Panel Layout ───────────────────────────────────── */
+.guide-layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* ── Sidebar ────────────────────────────────────────────── */
+.sidebar {
+  width: 300px;
+  min-width: 300px;
+  background: var(--guide-sidebar);
+  border-right: 1px solid var(--guide-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--guide-border);
+}
+
+.sidebar-header h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--guide-accent);
+  margin-bottom: 8px;
+}
+
+.back-link {
+  color: var(--guide-text-light);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: var(--guide-accent);
+}
+
+/* ── Task List in Sidebar ───────────────────────────────── */
+.task-list {
+  padding: 12px 0;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.task-item:hover {
+  background: rgba(74, 108, 247, 0.06);
+}
+
+.task-item.active {
+  background: rgba(74, 108, 247, 0.1);
+  border-left-color: var(--guide-accent);
+}
+
+.task-item.completed .task-item-status {
+  background: var(--guide-success);
+  color: white;
+}
+
+.task-item-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--guide-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--guide-text-light);
+  flex-shrink: 0;
+}
+
+.task-item.active .task-item-number {
+  background: var(--guide-accent);
+  color: white;
+}
+
+.task-item.completed .task-item-number {
+  background: var(--guide-success);
+  color: white;
+}
+
+.task-item-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.task-item-check {
+  margin-left: auto;
+  color: var(--guide-success);
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Main Panel ─────────────────────────────────────────── */
+.main-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px;
+}
+
+/* ── Welcome Message ────────────────────────────────────── */
+.welcome-message {
+  max-width: 600px;
+}
+
+.welcome-message h2 {
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+  color: var(--guide-accent);
+}
+
+.welcome-message p {
+  color: var(--guide-text-light);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.welcome-tips {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--guide-sidebar);
+  border-radius: var(--guide-radius);
+}
+
+.welcome-tips h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--guide-text);
+}
+
+.welcome-tips ul {
+  padding-left: 20px;
+}
+
+.welcome-tips li {
+  color: var(--guide-text-light);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* ── Task Detail View ───────────────────────────────────── */
+.task-detail {
+  max-width: 700px;
+}
+
+.task-header {
+  margin-bottom: 24px;
+}
+
+.task-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--guide-accent);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.task-header h2 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+/* ── File Badge ─────────────────────────────────────────── */
+.task-file {
+  margin-bottom: 20px;
+}
+
+.file-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #edf2f7;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--guide-text-light);
+  font-family: monospace;
+}
+
+.file-badge::before {
+  content: '📄';
+}
+
+/* ── Instructions ───────────────────────────────────────── */
+.task-instructions {
+  background: var(--guide-sidebar);
+  border-radius: var(--guide-radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+.task-instructions p {
+  margin-bottom: 12px;
+}
+
+.task-instructions p:last-child {
+  margin-bottom: 0;
+}
+
+.task-instructions code {
+  background: #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--guide-accent);
+}
+
+/* ── Hint Box ───────────────────────────────────────────── */
+.task-hint {
+  background: #fff8e5;
+  border-left: 4px solid #f0c040;
+  border-radius: 0 var(--guide-radius) var(--guide-radius) 0;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: #6b5900;
+  line-height: 1.6;
+}
+
+/* ── Action Buttons ─────────────────────────────────────── */
+.task-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  border: none;
+  border-radius: var(--guide-radius);
+  padding: 12px 28px;
+  font-family: var(--guide-font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--guide-shadow);
+}
+
+.btn-check {
+  background: var(--guide-accent);
+  color: white;
+}
+
+.btn-hint {
+  background: #edf2f7;
+  color: var(--guide-text-light);
+}
+
+/* ── Check Result ───────────────────────────────────────── */
+.task-result {
+  padding: 16px 20px;
+  border-radius: var(--guide-radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.task-result.success {
+  background: #e6f9ed;
+  color: #1a7a3a;
+  border: 1px solid #b5e8c3;
+}
+
+.task-result.failure {
+  background: #ffeaea;
+  color: #9a1c1c;
+  border: 1px solid #f5c2c2;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .guide-layout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  body {
+    overflow: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-height: 40vh;
+  }
+
+  .main-panel {
+    padding: 24px 16px;
+  }
+}

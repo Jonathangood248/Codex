@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Guide — Habit Tracker</title>
+
+  <!-- ── Google Font ──────────────────────────────────────────
+       Same font as the main app for consistency. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── Two-Panel Layout ───────────────────────────────────
+       The guide uses a sidebar + main panel layout.
+       The sidebar lists all 8 tasks. The main panel shows
+       the selected task's full instructions. -->
+  <div class="guide-layout">
+
+    <!-- ── Sidebar ────────────────────────────────────────────
+         Lists all 8 tasks. Click a task to see its details
+         in the main panel. Done tasks show a green checkmark. -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Task Guide</h2>
+        <a href="/" class="back-link">&larr; Back to App</a>
+      </div>
+      <nav class="task-list" id="task-list">
+        <!-- Task items are inserted here by guide.js -->
+      </nav>
+    </aside>
+
+    <!-- ── Main Panel ─────────────────────────────────────────
+         Shows the selected task's instructions, which file
+         to edit, what to change, and a Check button. -->
+    <main class="main-panel" id="main-panel">
+      <div class="welcome-message" id="welcome-message">
+        <h2>Welcome to the Task Guide!</h2>
+        <p>Choose a task from the sidebar to get started. Each task will teach you how to edit a different part of the Habit Tracker app.</p>
+        <p>You'll learn to change <strong>CSS</strong>, <strong>HTML</strong>, and <strong>JavaScript</strong> — the three core languages of the web.</p>
+        <div class="welcome-tips">
+          <h3>Tips before you start:</h3>
+          <ul>
+            <li>Open the project folder in VS Code</li>
+            <li>Keep the browser open next to VS Code</li>
+            <li>After editing a file, save it and refresh the browser</li>
+            <li>Use the "Check" button to verify your changes</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="task-detail" id="task-detail" style="display: none;">
+        <div class="task-header">
+          <span class="task-badge" id="task-badge">Task 1</span>
+          <h2 id="task-title">Task Title</h2>
+        </div>
+        <div class="task-file" id="task-file">
+          <!-- File badge shown here -->
+        </div>
+        <div class="task-instructions" id="task-instructions">
+          <!-- Instructions shown here -->
+        </div>
+        <div class="task-hint" id="task-hint" style="display: none;">
+          <!-- Hint shown here -->
+        </div>
+        <div class="task-actions">
+          <button class="btn btn-check" id="check-btn">Check My Work</button>
+          <button class="btn btn-hint" id="hint-btn">Show Hint</button>
+        </div>
+        <div class="task-result" id="task-result" style="display: none;">
+          <!-- Check result shown here -->
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="guide.js"></script>
+
+</body>
+</html>

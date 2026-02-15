@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Tracker</title>
+
+  <!-- ── Google Font ──────────────────────────────────────────
+       We import the Poppins font from Google Fonts.
+       To use a different font, replace 'Poppins' in the URL
+       and update the --font-main variable in style.css.
+       Try fonts.google.com to browse other options. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- ── Stylesheet ───────────────────────────────────────────
+       All the colours, sizes, and visual styles for the app
+       are defined in style.css. That's where you go to
+       change how things look. -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── Main App Container ─────────────────────────────────
+       Everything on the page lives inside this .app div.
+       It sets a max width and centres the content. -->
+  <div class="app">
+
+    <!-- ── Header ─────────────────────────────────────────────
+         The top section with the app title and the button
+         to create a new habit. -->
+    <header class="header">
+      <h1>Habit Tracker</h1>
+      <button class="btn btn-new" id="new-habit-btn">+ New Habit</button>
+    </header>
+
+    <!-- ── New Habit Form ─────────────────────────────────────
+         This form is hidden by default. It slides open when
+         you click "+ New Habit". It has fields for the habit
+         name, an emoji, and a colour picker. -->
+    <div class="new-habit-form" id="new-habit-form" style="display: none;">
+      <h3>Create a New Habit</h3>
+      <div class="form-group">
+        <label for="habit-name">Habit Name</label>
+        <input type="text" id="habit-name" placeholder="e.g. Drink water" maxlength="50">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="habit-emoji">Emoji</label>
+          <input type="text" id="habit-emoji" placeholder="e.g. 💧" maxlength="4" value="⭐">
+        </div>
+        <div class="form-group">
+          <label for="habit-colour">Card Colour</label>
+          <input type="color" id="habit-colour" value="#6c8cff">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-save" id="save-habit-btn">Save Habit</button>
+        <button class="btn btn-cancel" id="cancel-habit-btn">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ── Habit Cards Grid ──────────────────────────────────
+         This div holds all the habit cards. The grid layout
+         is controlled by .habits-grid in style.css.
+         JavaScript fills this area with cards automatically. -->
+    <div class="habits-grid" id="habits-grid">
+      <!-- Habit cards are inserted here by app.js -->
+    </div>
+
+  </div>
+
+  <!-- ── JavaScript ───────────────────────────────────────────
+       app.js handles all the interactive behaviour:
+       loading habits, creating new ones, checking in, etc. -->
+  <script src="app.js"></script>
+
+</body>
+</html>
