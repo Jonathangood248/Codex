@@ -8,12 +8,12 @@
    variables. Just edit the values below and refresh the browser!
    ════════════════════════════════════════════════════════════ */
 :root {
-  --bg-page: #f8f9ff;
-  --font-main: 'Poppins', sans-serif;
-  --card-radius: 20px;
+  --bg-page: #925fc55a;
+  --font-main: 'Nunito', sans-serif;
+  --card-radius: 30px;
   --btn-radius: 12px;
   --accent-default: #6c8cff;
-  --colour-done: #4ecb71;
+  --colour-done: #62ff13;
   --colour-delete: #f05656;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   --transition: 0.2s ease;
@@ -55,7 +55,7 @@ body {
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 30px;
 }
 
@@ -66,6 +66,56 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.header-tools {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.weather-widget {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 10px 12px;
+  min-width: 220px;
+  backdrop-filter: blur(4px);
+}
+
+.weather-status {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.weather-forecast {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.forecast-day {
+  background: rgba(108, 140, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.forecast-day-name {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.forecast-day-temp {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 /* ── Buttons ────────────────────────────────────────────────
@@ -334,6 +384,16 @@ body {
     flex-direction: column;
     gap: 16px;
     text-align: center;
+    align-items: center;
+  }
+
+  .header-tools {
+    width: 100%;
+    align-items: center;
+  }
+
+  .weather-widget {
+    width: min(100%, 360px);
   }
 
   .form-row {
@@ -342,5 +402,109 @@ body {
 
   .habits-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+.habits-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.btn-archived-toggle {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+
+.habit-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.habit-action-btn {
+  border: 1px solid #dfe6e9;
+  background: #f6f7fb;
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.habit-action-btn:hover {
+  background: #ecf0ff;
+}
+
+.habit-action-btn.archive {
+  border-color: #f5b642;
+  color: #996200;
+}
+
+.habit-action-btn.restore {
+  border-color: #58b368;
+  color: #216836;
+}
+
+.habit-card.archived {
+  opacity: 0.78;
+  border-top-style: dashed;
+}
+
+.habit-card.archived .btn-checkin {
+  display: none;
+}
+
+.habit-history {
+  margin-top: 10px;
+  background: #f9fbff;
+  border: 1px solid #e8eef9;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.habit-history-title {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.habit-history-list {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.habit-history-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.habit-history-empty {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.archived-heading {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  margin-bottom: 0;
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+}
+
+@media (max-width: 600px) {
+  .habits-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .habit-actions {
+    flex-wrap: wrap;
   }
 }

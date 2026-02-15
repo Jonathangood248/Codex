@@ -1,107 +1,233 @@
-// ── server.js ──────────────────────────────────────────────
-// This is the main file that runs the entire application.
-// It creates an Express web server that:
-//   1. Serves the Habit Tracker app from the public/ folder
-//   2. Serves the Task Guide app from the guide/ folder
-//   3. Provides API routes for habit CRUD operations
-//   4. Provides guide check routes for auto-checking tasks
-//
-// To start the server, run: npm start (or node server.js)
-
-const express = require('express');
+﻿const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const { getAllHabits, createHabit, checkinHabit, deleteHabit } = require('./database');
+const {
+  getAllHabits,
+  createHabit,
+  updateHabit,
+  archiveHabit,
+  restoreHabit,
+  checkinHabit,
+  getHabitHistory,
+  deleteHabit
+} = require('./database');
 
 const app = express();
 const PORT = 3005;
 
-// ── Middleware ──────────────────────────────────────────────
-// express.json() lets us read JSON data sent from the frontend
-// (e.g. when creating a new habit via POST request).
+function parseHabitId(rawId) {
+  const id = Number(rawId);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  return id;
+}
+
+function parseCreateHabitBody(body) {
+  if (!body || typeof body !== 'object') {
+    return { error: 'Invalid request body' };
+  }
+
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  const emoji = typeof body.emoji === 'string' ? body.emoji.trim() : '';
+  const colour = typeof body.colour === 'string' ? body.colour.trim() : '';
+
+  if (!name) return { error: 'Habit name is required' };
+  if (name.length > 50) return { error: 'Habit name must be 50 characters or fewer' };
+  if (emoji && emoji.length > 8) return { error: 'Emoji is too long' };
+  if (colour && !/^#[0-9a-fA-F]{6}$/.test(colour)) {
+    return { error: 'Card colour must be a valid hex value (e.g. #6c8cff)' };
+  }
+
+  return {
+    name,
+    emoji: emoji || '⭐',
+    colour: colour || '#6c8cff'
+  };
+}
+
+function parseUpdateHabitBody(body) {
+  if (!body || typeof body !== 'object') {
+    return { error: 'Invalid request body' };
+  }
+
+  const updates = {};
+
+  if (Object.prototype.hasOwnProperty.call(body, 'name')) {
+    if (typeof body.name !== 'string' || !body.name.trim()) {
+      return { error: 'Habit name is required' };
+    }
+    if (body.name.trim().length > 50) {
+      return { error: 'Habit name must be 50 characters or fewer' };
+    }
+    updates.name = body.name.trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'emoji')) {
+    if (typeof body.emoji !== 'string') {
+      return { error: 'Emoji must be a string' };
+    }
+    const trimmed = body.emoji.trim();
+    if (trimmed && trimmed.length > 8) {
+      return { error: 'Emoji is too long' };
+    }
+    updates.emoji = trimmed || '⭐';
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'colour')) {
+    if (typeof body.colour !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(body.colour.trim())) {
+      return { error: 'Card colour must be a valid hex value (e.g. #6c8cff)' };
+    }
+    updates.colour = body.colour.trim();
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return { error: 'No valid fields to update' };
+  }
+
+  return { updates };
+}
+
 app.use(express.json());
-
-// ── Serve the Habit Tracker (public/ folder) ───────────────
-// Any file in the public/ folder is accessible from the browser.
-// For example, public/style.css becomes http://localhost:3005/style.css
 app.use(express.static(path.join(__dirname, 'public')));
-
-// ── Serve the Task Guide (guide/ folder) ───────────────────
-// The guide files are served at /guide/...
-// For example, guide/style.css becomes http://localhost:3005/guide/style.css
 app.use('/guide', express.static(path.join(__dirname, 'guide')));
 
-// ════════════════════════════════════════════════════════════
-// ── HABIT API ROUTES ───────────────────────────────────────
-// These routes let the frontend talk to the database.
-// ════════════════════════════════════════════════════════════
-
-// ── GET /api/habits ────────────────────────────────────────
-// Returns all habits as a JSON array.
-// The frontend calls this when the page loads.
 app.get('/api/habits', (req, res) => {
   try {
-    const habits = getAllHabits();
+    const includeArchived = req.query.includeArchived === '1';
+    const habits = getAllHabits({ includeArchived });
     res.json(habits);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch habits' });
   }
 });
 
-// ── POST /api/habits ───────────────────────────────────────
-// Creates a new habit. Expects JSON body with: name, emoji, colour.
-// The frontend calls this when the user fills in the "New Habit" form.
 app.post('/api/habits', (req, res) => {
   try {
-    const { name, emoji, colour } = req.body;
-    if (!name || !name.trim()) {
-      return res.status(400).json({ error: 'Habit name is required' });
+    const parsed = parseCreateHabitBody(req.body);
+    if (parsed.error) {
+      return res.status(400).json({ error: parsed.error });
     }
-    const habit = createHabit(name.trim(), emoji, colour);
+
+    const habit = createHabit(parsed.name, parsed.emoji, parsed.colour);
     res.status(201).json(habit);
   } catch (err) {
     res.status(500).json({ error: 'Failed to create habit' });
   }
 });
 
-// ── PUT /api/habits/:id/checkin ────────────────────────────
-// Checks in a habit for today. The streak logic is handled
-// in database.js — see checkinHabit() for full details.
+app.put('/api/habits/:id', (req, res) => {
+  try {
+    const id = parseHabitId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ error: 'Invalid habit id' });
+    }
+
+    const parsed = parseUpdateHabitBody(req.body);
+    if (parsed.error) {
+      return res.status(400).json({ error: parsed.error });
+    }
+
+    const habit = updateHabit(id, parsed.updates);
+    if (!habit) {
+      return res.status(404).json({ error: 'Habit not found' });
+    }
+
+    res.json(habit);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update habit' });
+  }
+});
+
 app.put('/api/habits/:id/checkin', (req, res) => {
   try {
-    const result = checkinHabit(parseInt(req.params.id));
+    const id = parseHabitId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ error: 'Invalid habit id' });
+    }
+
+    const result = checkinHabit(id);
     if (!result) {
       return res.status(404).json({ error: 'Habit not found' });
     }
+    if (result.archived) {
+      return res.status(400).json({ error: 'Archived habits cannot be checked in' });
+    }
+
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Failed to check in' });
   }
 });
 
-// ── DELETE /api/habits/:id ─────────────────────────────────
-// Deletes a habit permanently. The frontend calls this when
-// the user clicks the delete button on a card.
+app.patch('/api/habits/:id/archive', (req, res) => {
+  try {
+    const id = parseHabitId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ error: 'Invalid habit id' });
+    }
+
+    const habit = archiveHabit(id);
+    if (!habit) {
+      return res.status(404).json({ error: 'Habit not found' });
+    }
+
+    res.json(habit);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to archive habit' });
+  }
+});
+
+app.patch('/api/habits/:id/restore', (req, res) => {
+  try {
+    const id = parseHabitId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ error: 'Invalid habit id' });
+    }
+
+    const habit = restoreHabit(id);
+    if (!habit) {
+      return res.status(404).json({ error: 'Habit not found' });
+    }
+
+    res.json(habit);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to restore habit' });
+  }
+});
+
+app.get('/api/habits/:id/history', (req, res) => {
+  try {
+    const id = parseHabitId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ error: 'Invalid habit id' });
+    }
+
+    const limitRaw = Number(req.query.limit);
+    const limit = Number.isInteger(limitRaw) && limitRaw > 0 && limitRaw <= 90 ? limitRaw : 30;
+    const history = getHabitHistory(id, limit);
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
+
 app.delete('/api/habits/:id', (req, res) => {
   try {
-    const deleted = deleteHabit(parseInt(req.params.id));
+    const id = parseHabitId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ error: 'Invalid habit id' });
+    }
+
+    const deleted = deleteHabit(id);
     if (!deleted) {
       return res.status(404).json({ error: 'Habit not found' });
     }
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete habit' });
   }
 });
 
-// ════════════════════════════════════════════════════════════
-// ── TASK GUIDE CHECK ROUTES ────────────────────────────────
-// These routes let the guide app automatically check whether
-// the user has completed certain tasks. Each route reads a
-// file and looks for the expected change.
-// ════════════════════════════════════════════════════════════
-
-// Helper: read a file's contents safely
 function readFile(filePath) {
   try {
     return fs.readFileSync(filePath, 'utf8');
@@ -111,56 +237,42 @@ function readFile(filePath) {
 }
 
 app.get('/api/guide/check/:taskNumber', (req, res) => {
-  const taskNum = parseInt(req.params.taskNumber);
+  const taskNum = parseInt(req.params.taskNumber, 10);
   const stylePath = path.join(__dirname, 'public', 'style.css');
   const htmlPath = path.join(__dirname, 'public', 'index.html');
 
   switch (taskNum) {
-
-    // ── Task 1: Change the page background colour ──────────
-    // Check if --bg-page is no longer the default #f8f9ff
     case 1: {
       const css = readFile(stylePath);
       if (!css) return res.json({ passed: false, message: 'Could not read public/style.css' });
-
       const match = css.match(/--bg-page\s*:\s*([^;]+)/);
       if (!match) return res.json({ passed: false, message: 'Could not find --bg-page variable in style.css' });
-
       const value = match[1].trim().toLowerCase();
       if (value === '#f8f9ff') {
         return res.json({ passed: false, message: 'The --bg-page value is still the default (#f8f9ff). Change it to a different colour!' });
       }
-      return res.json({ passed: true, message: 'Nice! You changed the background colour to ' + value + '!' });
+      return res.json({ passed: true, message: `Nice! You changed the background colour to ${value}!` });
     }
 
-    // ── Task 2: Make the cards more rounded ────────────────
-    // Check if --card-radius is greater than 20px
     case 2: {
       const css = readFile(stylePath);
       if (!css) return res.json({ passed: false, message: 'Could not read public/style.css' });
-
       const match = css.match(/--card-radius\s*:\s*([^;]+)/);
       if (!match) return res.json({ passed: false, message: 'Could not find --card-radius variable in style.css' });
-
       const value = match[1].trim();
-      const num = parseInt(value);
-      if (isNaN(num) || num <= 20) {
-        return res.json({ passed: false, message: 'The --card-radius is ' + value + '. Make it larger than 20px (try 32px or 40px)!' });
+      const num = parseInt(value, 10);
+      if (Number.isNaN(num) || num <= 20) {
+        return res.json({ passed: false, message: `The --card-radius is ${value}. Make it larger than 20px (try 32px or 40px)!` });
       }
-      return res.json({ passed: true, message: 'Great! Cards are now ' + value + ' rounded — looking smooth!' });
+      return res.json({ passed: true, message: `Great! Cards are now ${value} rounded - looking smooth!` });
     }
 
-    // ── Task 3: Change the page font (self-check) ─────────
-    case 3: {
+    case 3:
       return res.json({ passed: true, message: 'This is a self-check task. If you can see a different font in the browser, you did it!' });
-    }
 
-    // ── Task 4: Add a page title above the habit grid ──────
-    // Check if index.html contains <h2> with "My Daily Habits"
     case 4: {
       const html = readFile(htmlPath);
       if (!html) return res.json({ passed: false, message: 'Could not read public/index.html' });
-
       const hasH2 = /<h2[^>]*>.*My Daily Habits.*<\/h2>/i.test(html);
       if (!hasH2) {
         return res.json({ passed: false, message: 'Could not find an <h2> element containing "My Daily Habits" in index.html.' });
@@ -168,12 +280,9 @@ app.get('/api/guide/check/:taskNumber', (req, res) => {
       return res.json({ passed: true, message: 'Awesome! The page title is showing up. Looking professional!' });
     }
 
-    // ── Task 5: Add a footer to the page ───────────────────
-    // Check if index.html contains a <footer> element
     case 5: {
       const html = readFile(htmlPath);
       if (!html) return res.json({ passed: false, message: 'Could not read public/index.html' });
-
       const hasFooter = /<footer[\s>]/i.test(html);
       if (!hasFooter) {
         return res.json({ passed: false, message: 'Could not find a <footer> element in index.html. Add one inside the .app container!' });
@@ -181,38 +290,29 @@ app.get('/api/guide/check/:taskNumber', (req, res) => {
       return res.json({ passed: true, message: 'Footer found! Your page now has a proper ending.' });
     }
 
-    // ── Task 6: Change the check-in button colour ──────────
-    // Check if --colour-done is no longer #4ecb71
     case 6: {
       const css = readFile(stylePath);
       if (!css) return res.json({ passed: false, message: 'Could not read public/style.css' });
-
       const match = css.match(/--colour-done\s*:\s*([^;]+)/);
       if (!match) return res.json({ passed: false, message: 'Could not find --colour-done variable in style.css' });
-
       const value = match[1].trim().toLowerCase();
       if (value === '#4ecb71') {
         return res.json({ passed: false, message: 'The --colour-done value is still the default (#4ecb71). Change it to a different colour!' });
       }
-      return res.json({ passed: true, message: 'Check-in button is now ' + value + '. Looks great!' });
+      return res.json({ passed: true, message: `Check-in button is now ${value}. Looks great!` });
     }
 
-    // ── Task 7: Make the empty state message funnier (self-check)
-    case 7: {
+    case 7:
       return res.json({ passed: true, message: 'This is a self-check task. If you see your new message when there are no habits, you did it!' });
-    }
 
-    // ── Task 8: Add a second emoji to streak display (self-check)
-    case 8: {
+    case 8:
       return res.json({ passed: true, message: 'This is a self-check task. If you can see a second emoji next to the streak number, you nailed it!' });
-    }
 
     default:
-      return res.json({ passed: false, message: 'Unknown task number: ' + taskNum });
+      return res.json({ passed: false, message: `Unknown task number: ${taskNum}` });
   }
 });
 
-// ── Start the server ───────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`Habit Tracker is running at http://localhost:${PORT}`);
   console.log(`Task Guide is at http://localhost:${PORT}/guide`);
